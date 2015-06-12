@@ -11,10 +11,20 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final String FORECASTFRAGMENT_TAG = "FFTAG";
+
+    private String location;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        location = Utility.getPreferredLocation(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment, new ForecastFragment(), FORECASTFRAGMENT_TAG).commit();
+        }
     }
 
 
@@ -42,6 +52,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String savedLocation = Utility.getPreferredLocation(this);
+        if (savedLocation != null && !savedLocation.equals(location)) {
+            ForecastFragment fragment = (ForecastFragment)getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
+            if (fragment != null) {
+                fragment.onLocationChanged();
+            }
+            location = savedLocation;
+        }
     }
 
     private void openLocationInMap() {
