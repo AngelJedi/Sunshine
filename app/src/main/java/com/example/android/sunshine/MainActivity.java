@@ -9,10 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback {
 
-    private final String FORECASTFRAGMENT_TAG = "FFTAG";
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
+    private boolean twoPaneLayout;
     private String location;
 
     @Override
@@ -21,10 +22,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        if (savedInstanceState == null) {
-//            getSupportFragmentManager().beginTransaction()
-//                    .add(R.id.fragment, new ForecastFragment(), FORECASTFRAGMENT_TAG).commit();
-//        }
+        if (findViewById(R.id.weather_detail_container) != null) {
+            // two pane layout is present only in large-screen layouts (layout/sw-600dp)
+            twoPaneLayout = true;
+            // add the detail view to the activity when it is a two pane layout.
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.weather_detail_container, new DetailFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            twoPaneLayout = false;
+        }
     }
 
 
@@ -59,11 +68,33 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         String savedLocation = Utility.getPreferredLocation(this);
         if (savedLocation != null && !savedLocation.equals(location)) {
-            ForecastFragment fragment = (ForecastFragment)getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
+            ForecastFragment fragment = (ForecastFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
             if (fragment != null) {
                 fragment.onLocationChanged();
             }
+            DetailFragment detailFragment = (DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+            if (detailFragment != null) {
+                detailFragment.onLocationChanged(location);
+            }
             location = savedLocation;
+        }
+    }
+
+    @Override
+    public void onItemSelected(Uri uri) {
+        if (twoPaneLayout) {
+            Bundle args = new Bundle();
+            args.putParcelable(DetailFragment.DETAIL_URI, uri);
+
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DetailActivity.class).setData(uri);
+            startActivity(intent);
         }
     }
 

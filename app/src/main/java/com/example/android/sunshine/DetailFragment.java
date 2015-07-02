@@ -2,6 +2,7 @@ package com.example.android.sunshine;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -24,13 +25,16 @@ import com.example.android.sunshine.data.WeatherContract.WeatherEntry;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class DetailActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String LOG_TAG = DetailActivityFragment.class.getSimpleName();
+    private static final String LOG_TAG = DetailFragment.class.getSimpleName();
     private static final String FORECAST_SHARE_HASHTAG = "#SunshineApp";
+
+    static final String DETAIL_URI = "URI";
 
     private String forecast;
     private ShareActionProvider shareActionProvider;
+    private Uri uri;
 
     private static final int DETAIL_LOADER = 0;
     private static final String[] DETAIL_COLUMNS = {
@@ -69,7 +73,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     private TextView pressureView;
 
 
-    public DetailActivityFragment() {
+    public DetailFragment() {
         setHasOptionsMenu(true);
     }
 
@@ -82,6 +86,12 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Bundle args = getArguments();
+        if (args != null) {
+            uri = args.getParcelable(DetailFragment.DETAIL_URI);
+        }
+
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
         iconView = (ImageView) view.findViewById(R.id.detail_icon);
         dateView = (TextView) view.findViewById(R.id.detail_date_textview);
@@ -124,12 +134,10 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Intent intent = getActivity().getIntent();
-        if (intent == null) {
+        if (uri == null) {
             return null;
         }
-
-        return new CursorLoader(getActivity(), intent.getData(), DETAIL_COLUMNS, null, null, null);
+        return new CursorLoader(getActivity(), uri, DETAIL_COLUMNS, null, null, null);
     }
 
     @Override
@@ -183,5 +191,13 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    protected void onLocationChanged(String newLocation) {
+        if (uri != null) {
+            long date = WeatherEntry.getDateFromUri(uri);
+            uri = WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
+        }
     }
 }
