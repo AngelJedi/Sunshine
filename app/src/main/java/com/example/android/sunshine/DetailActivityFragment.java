@@ -139,8 +139,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         }
 
         int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
-
-        iconView.setImageResource(R.drawable.ic_launcher);
+        iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
 
         // Set date information on views
         long date = data.getLong(COL_DATE);
