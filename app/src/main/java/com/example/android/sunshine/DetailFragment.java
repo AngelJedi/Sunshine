@@ -159,6 +159,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         // Set forecast description on views
         String description = data.getString(COL_DESC);
         mDescriptionView.setText(description);
+        mIconView.setContentDescription(description);
 
         // Set high and low temps on view
         boolean isMetric = Utility.isMetric(getActivity());
