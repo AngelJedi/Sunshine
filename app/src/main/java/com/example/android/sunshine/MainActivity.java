@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
         } else {
             mTwoPaneLayout = false;
+            getSupportActionBar().setElevation(0f);
         }
 
         ForecastFragment fragment = (ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
