@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
-    private boolean twoPaneLayout;
+    private boolean mTwoPaneLayout;
     private String location;
 
     @Override
@@ -24,16 +24,20 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
         if (findViewById(R.id.weather_detail_container) != null) {
             // two pane layout is present only in large-screen layouts (layout/sw-600dp)
-            twoPaneLayout = true;
+            mTwoPaneLayout = true;
             // add the detail view to the activity when it is a two pane layout.
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.weather_detail_container, new DetailFragment(), DETAILFRAGMENT_TAG)
                         .commit();
             }
+
         } else {
-            twoPaneLayout = false;
+            mTwoPaneLayout = false;
         }
+
+        ForecastFragment fragment = (ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+        fragment.setUseTodayLayout(!mTwoPaneLayout);
     }
 
 
@@ -82,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
     @Override
     public void onItemSelected(Uri uri) {
-        if (twoPaneLayout) {
+        if (mTwoPaneLayout) {
             Bundle args = new Bundle();
             args.putParcelable(DetailFragment.DETAIL_URI, uri);
 
